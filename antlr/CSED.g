@@ -9,7 +9,7 @@ tokens {
 }
 
 
-// especificacoes sintaticas
+//--- especificacoes sintaticas -------------------------------------
 prog
     :  funDecl+  -> ^(PROG funDecl+)
     ;
@@ -37,15 +37,60 @@ arg
     ;
 
 stat
-    : 'log' ';'
+    : ID '=' expr ';'
+    | 'if' '(' expr ')' stat 'else' stat
+    | 'while' '(' expr ')' stat
+    | 'for' '(' ID '=' expr '..' expr ')' stat
+    | '{' stat* '}'
+    | expr ';'
+    | ';'                  // comando vazio
+    ;
+
+expr
+    : logExpr
+    ;
+
+logExpr
+    : relExpr (('&&' | '||')^ relExpr)*
+    ;
+
+relExpr
+    : addExpr (('>' | '<' | '==' | '!=' | '>=' | '<=')^ addExpr)*
+    ;
+
+addExpr
+    : multExpr (('+' | '-')^ multExpr)*
+    ;
+
+multExpr
+    : primary (('*' | '/')^ primary)*
+    ;
+
+suffixExpr
+    : primary ('.' ID)*
+    ;
+
+primary
+    : INT
+    | ID
+    | ID '='^ expr
+    | '(' expr ')'
+    | CHAR
+    | STRING
+    | 'true'
+    | 'false'
+    | 'null'
     ;
 
 
-// especificacoes lexicas para os tokens
-ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+//
+//--- especificacoes lexicas para os tokens -------------------------
+//
+
+ID  : ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
     ;
 
-INT :	'0'..'9'+
+INT : '0'..'9'+
     ;
 
 COMMENT
