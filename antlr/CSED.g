@@ -6,16 +6,35 @@ options {
 
 tokens {
     PROG;
+    EXPR;
+    CALLREF;
+    FUN;
+    ATTR;
+    IF;
+    FOR;
+    WHILE;
+    BLOCK;
+}
+
+@lexer::header {
+package br.ufpb.iged.csed;
+}
+
+@header {
+package br.ufpb.iged.csed;
 }
 
 
+//-------------------------------------------------------------------
 //--- especificacoes sintaticas -------------------------------------
+//-------------------------------------------------------------------
+
 prog
     :  funDecl+  -> ^(PROG funDecl+)
     ;
 
 funDecl
-    : retType ID '(' argList ')' '{' stat* '}'
+    : retType ID '(' argList ')' '{' stat* '}' -> ^(FUN ID retType argList stat*)
     ;
 
 retType
@@ -37,17 +56,17 @@ arg
     ;
 
 stat
-    : ID '=' expr ';'
-    | 'if' '(' expr ')' stat 'else' stat
-    | 'while' '(' expr ')' stat
-    | 'for' '(' ID '=' expr '..' expr ')' stat
-    | '{' stat* '}'
-    | expr ';'
-    | ';'                  // comando vazio
+    : ID '=' expr ';' -> ^(ATTR ID expr)
+    | 'if' '(' expr ')' stat 'else' stat -> ^(IF expr stat stat)
+    | 'while' '(' expr ')' stat -> ^(WHILE expr stat)
+    | 'for' '(' ID '=' expr '..' expr ')' stat -> ^(FOR ID expr expr stat)
+    | '{' stat* '}' -> ^(BLOCK stat*)
+    | expr ';'!
+    | ';'!                 // comando vazio
     ;
 
 expr
-    : logExpr
+    : logExpr -> ^(EXPR logExpr)
     ;
 
 logExpr
@@ -66,22 +85,36 @@ multExpr
     : primary (('*' | '/')^ primary)*
     ;
 
+// ----------------------------------------------
+// Sem sufixos para seleção usando . por enquanto
 suffixExpr
     : primary ('.' ID)*
+    ;
+// ----------------------------------------------
+
+exprList
+    : expr (',' expr)*
+    |
     ;
 
 primary
     : INT
-    | ID
-    | ID '='^ expr
-    | '(' expr ')'
-    | CHAR
-    | STRING
     | 'true'
     | 'false'
     | 'null'
+    | callOrRef
+    | '(' expr ')'
+    | CHAR
+    | STRING
     ;
 
+name
+    : ID ('.'^ ID)*
+    ;
+
+callOrRef
+    : name ('(' exprList ')')? -> ^(CALLREF name exprList?)
+    ;
 
 //
 //--- especificacoes lexicas para os tokens -------------------------

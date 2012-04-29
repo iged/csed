@@ -1,0 +1,26 @@
+<project name="CSED" default="compile" basedir=".">
+    <property name="src.dir" value="./src/br/ufpb/iged/csed"/>
+    <property name="antlr.dir" value="\${basedir}/antlr"/>
+    <property name="classes" location="classes"/>
+
+    <target name="antlr" description="Gera analisador sintático a partir da gramatica">
+	<java classname="org.antlr.Tool" fork="true" failonerror="true">
+	    <arg value="-verbose"/>
+	    <arg value="-o"/>
+	    <arg path="./src/br/ufpb/iged/csed"/>
+	    <arg path="\${antlr.dir}/CSED.g"/>
+	</java>
+    </target>
+
+    <target name="compile" depends="antlr" description="Compila o codigo Java">
+	<mkdir dir="classes"/>
+	<javac srcdir="./src/br/ufpb/iged/csed" destdir="${classes}"/>
+    </target>
+
+    <target name="clear">
+	<delete file="./src/br/ufpb/iged/csed/Csed.tokens"/>
+	<delete file="./src/br/ufpb/iged/csed/CsedParser.java"/>
+        <delete file="./src/br/ufpb/iged/csed/CsedLexer.java"/>
+	<delete dir="./classes"/>
+    </target>
+</project> 
